@@ -4,7 +4,9 @@ on_build_success()
 {
         git rev-list HEAD --abbrev-commit  --max-count=1 > tlink_version
         cp tlink_version $version_dir
-        cksum tlink
+	
+	mkdir -p $proj_root/../sys_mbnet_patch/mh_fix_net/
+	cp tlink $proj_root/../sys_mbnet_patch/mh_fix_net/tlink
 }
 
 

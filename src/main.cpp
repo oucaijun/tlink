@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
     std::string localipaddr;
     iferr_t status = getLocalIP(ifname, localipaddr);
     if(status == IF_CONNECT_OK) {
+	errno=0;
         status = try_connect(addr, port, ifname, timeoutsec);
     }
 
@@ -77,7 +78,9 @@ int main(int argc, char *argv[])
     {
         printf("Connect Port %d on %s via %s OK\n", port, addr.c_str (), ifname.c_str ());
     } else {
-        printf("Connect Port %d on %s via %s FAILED[%s]\n", port, addr.c_str (), ifname.c_str (), errstr[status].c_str ());
+        printf("Connect Port %d on %s via %s FAILED[%s], strerror info: %s\n", port, addr.c_str (), ifname.c_str (), errstr[status].c_str (), strerror(errno));
+	//system("netstat -nt | grep 8777");
+        //system("route -n");
     }
 
     return (int)status;
@@ -174,13 +177,13 @@ iferr_t try_connect(const std::string& addr, int port, const std::string& ifname
         if(0 == connect(mysocket,(struct sockaddr *)&my_addr,sizeof(my_addr)))
         {
             if (errno == EINPROGRESS) {
-                perror( "connect timeout");
+                //printf ("connect %s:%d timeout, %s\n", addr.c_str(), port, strerror(errno));
                 status = IF_CONNECT_TIMEOUT;
             } else {
                 status = IF_CONNECT_OK;
             }
         } else {
-            perror ("connect fail");
+            //printf ("connect %s:%d fail, %s\n", addr.c_str(), port, strerror(errno));
             status = IF_CONNECT_FAIL;
         }
     }

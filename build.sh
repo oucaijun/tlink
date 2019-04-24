@@ -6,7 +6,7 @@ on_build_success()
         cp tlink_version $version_dir
 	
 	mkdir -p $proj_root/../sys_mbnet_patch/mh_fix_net/
-	cp tlink $proj_root/../sys_mbnet_patch/mh_fix_net/tlink
+	cp -rpf tlink $proj_root/../sys_mbnet_patch/mh_fix_net/tlink
 }
 
 

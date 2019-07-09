@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "zlog/logmain.h"
 
 typedef enum {
     IF_CONNECT_OK,
@@ -74,14 +75,10 @@ int main(int argc, char *argv[])
         status = try_connect(addr, port, ifname, timeoutsec);
     }
 
-    if(status == IF_CONNECT_OK)
-    {
-        printf("Connect Port %d on %s via %s OK\n", port, addr.c_str (), ifname.c_str ());
-    } else {
-        printf("Connect Port %d on %s via %s FAILED[%s], strerror info: %s\n", port, addr.c_str (), ifname.c_str (), errstr[status].c_str (), strerror(errno));
-	//system("netstat -nt | grep 8777");
-        //system("route -n");
-    }
+    zInfo("Connect %s:%d via %s[%s:%s], system info:%s",
+          addr.c_str (), port, ifname.c_str (),
+          (status == IF_CONNECT_OK)?"OK":"FAILED",
+          errstr[status].c_str (), strerror(errno));
 
     return (int)status;
 }
@@ -149,7 +146,7 @@ iferr_t try_connect(const std::string& addr, int port, const std::string& ifname
 
     mysocket = socket(AF_INET, SOCK_STREAM,0);
     if(-1 == mysocket ){
-        printf("Socket Error\n");
+        zInfo("Create Socket Error\n");
         exit(IF_CONNECT_FAIL);
     }
 
@@ -176,15 +173,13 @@ iferr_t try_connect(const std::string& addr, int port, const std::string& ifname
         // If  the connection or binding succeeds, zero is returned
         if(0 == connect(mysocket,(struct sockaddr *)&my_addr,sizeof(my_addr)))
         {
-            if (errno == EINPROGRESS) {
-                //printf ("connect %s:%d timeout, %s\n", addr.c_str(), port, strerror(errno));
-                status = IF_CONNECT_TIMEOUT;
-            } else {
-                status = IF_CONNECT_OK;
-            }
+            status = IF_CONNECT_OK;
         } else {
-            //printf ("connect %s:%d fail, %s\n", addr.c_str(), port, strerror(errno));
-            status = IF_CONNECT_FAIL;
+            if (errno == EINPROGRESS) {
+                status = IF_CONNECT_OK;
+            } else {
+                status = IF_CONNECT_FAIL;
+            }
         }
     }
     close(mysocket);
